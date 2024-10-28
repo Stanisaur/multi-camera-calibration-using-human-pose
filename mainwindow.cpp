@@ -38,8 +38,10 @@ void MainWindow::addNewCameraCell() {
 
     allCellPtr.append(newCameraCell);
     connect(newCameraCell,SIGNAL(closeThisCell(int)),this,SLOT(closeCell(int)));
-    connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, this,
-            &MainWindow::processAndDisplayImage);
+    // connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, this,
+    //         &MainWindow::processAndDisplayImage);
+    connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, newCameraCell,
+            &CameraCell::updateLatestCapture);
     numCameraCells++;
 }
 
@@ -60,44 +62,52 @@ void MainWindow::closeCell(int cellNumber){
     allCellPtr.remove(cellNumber);
 }
 
-void MainWindow::processAndDisplayImage(int requestID, const QImage &input){
+void MainWindow::processAndDisplayImages(){
     cv::Mat frame;
-    //need to use CV_8UC4 to be compatible with Qimage format
-    frame = qimage_to_mat_ref(input, CV_8UC4);
-    cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
+
+    for (int i = 0; i < numCameraCells; i++){
+        QImage &input = allCellPtr[i]->latestCapture;
+        //need to use CV_8UC4 to be compatible with Qimage format
+        frame = qimage_to_mat_ref(input, CV_8UC4);
+        if (frame.empty()){
+            continue;
+        }
+        cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
 
 
-    std::pair<DetectBox, std::vector<PosePoint>> inference_box= rtmpose_tracker_onnxruntime->Inference(frame);
-    DetectBox detect_box = inference_box.first;
-    std::vector<PosePoint> pose_result = inference_box.second;
+        std::pair<DetectBox, std::vector<PosePoint>> inference_box= rtmpose_tracker_onnxruntime->Inference(frame);
+        DetectBox detect_box = inference_box.first;
+        std::vector<PosePoint> pose_result = inference_box.second;
 
-    cv::rectangle(
-        frame,
-        cv::Point(detect_box.left, detect_box.top),
-        cv::Point(detect_box.right, detect_box.bottom),
-        cv::Scalar{ 255, 0, 0 },
-        2);
-
-    for (int i = 0; i < pose_result.size(); ++i)
-    {
-        cv::circle(frame, cv::Point(pose_result[i].x, pose_result[i].y), 1, cv::Scalar{ 0, 0, 255 }, 5, cv::LINE_AA);
-    }
-
-    for (int i = 0; i < coco_17_joint_links.size(); ++i)
-    {
-        std::pair<int, int> joint_links = coco_17_joint_links[i];
-        cv::line(
+        cv::rectangle(
             frame,
-            cv::Point(pose_result[joint_links.first].x, pose_result[joint_links.first].y),
-            cv::Point(pose_result[joint_links.second].x, pose_result[joint_links.second].y),
-            cv::Scalar{ 0, 255, 0 },
-            2,
-            cv::LINE_AA);
-    }
-    cv::Mat resized_frame;
+            cv::Point(detect_box.left, detect_box.top),
+            cv::Point(detect_box.right, detect_box.bottom),
+            cv::Scalar{ 255, 0, 0 },
+            2);
 
-    QImage output_frame = mat_to_qimage_ref(frame, QImage::Format_RGB32);
-    ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
+        for (int i = 0; i < pose_result.size(); ++i)
+        {
+            cv::circle(frame, cv::Point(pose_result[i].x, pose_result[i].y), 1, cv::Scalar{ 0, 0, 255 }, 5, cv::LINE_AA);
+        }
+
+        for (int i = 0; i < coco_17_joint_links.size(); ++i)
+        {
+            std::pair<int, int> joint_links = coco_17_joint_links[i];
+            cv::line(
+                frame,
+                cv::Point(pose_result[joint_links.first].x, pose_result[joint_links.first].y),
+                cv::Point(pose_result[joint_links.second].x, pose_result[joint_links.second].y),
+                cv::Scalar{ 0, 255, 0 },
+                2,
+                cv::LINE_AA);
+        }
+        cv::Mat resized_frame;
+
+        QImage output_frame = mat_to_qimage_ref(frame, QImage::Format_RGB32);
+        ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
+    }
+
 }
 
 void MainWindow::on_startPoseTracking_clicked()
@@ -108,6 +118,10 @@ void MainWindow::on_startPoseTracking_clicked()
 }
 
 void MainWindow::capturePose(){
-    allCellPtr[0]->imageCapture->capture();
+    for (int i = 0;i < numCameraCells; i++){
+        allCellPtr[i]->imageCapture->capture();
+    }
+
+    processAndDisplayImages();
 }
 

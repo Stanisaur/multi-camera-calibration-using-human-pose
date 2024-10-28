@@ -9,6 +9,7 @@
 #include <QOverload>
 #include <QImageCapture>
 #include "mainwindow.h"
+#include "utils.h"
 
 CameraCell::CameraCell(QWidget *parent)
     : QWidget(parent)
@@ -42,6 +43,11 @@ void CameraCell::setCamera()
     camera->start();
 
 }
+
+void CameraCell::updateLatestCapture(int requestID, const QImage& capture){
+    this->latestCapture = capture;
+}
+
 
 void CameraCell::on_removeButton_clicked()
 {

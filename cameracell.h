@@ -8,6 +8,7 @@
 #include <QMediaCaptureSession>
 #include <QImageCapture>
 #include <QScopedPointer>
+#include "utils.h"
 
 namespace Ui {
 class CameraCell;
@@ -35,8 +36,10 @@ public:
     QScopedPointer<QCamera> camera;
     QScopedPointer<QImageCapture> imageCapture;
     QMediaCaptureSession currentCameraCaptureSession;
+    QImage latestCapture;
 
     void setCameraOptions(QCameraDevice &defaultCamDevice, QVector<QCameraDevice> &list);
+    void updateLatestCapture(int requestID, const QImage&);
     void setCamera();
 signals:
     void closeThisCell(int cellNumber);
@@ -44,8 +47,8 @@ signals:
 
 private slots:
     void on_removeButton_clicked();
-
     void on_camOptionsComboBox_currentIndexChanged(int index);
+
 
 private:
     Ui::CameraCell *ui;

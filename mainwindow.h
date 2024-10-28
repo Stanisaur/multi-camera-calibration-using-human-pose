@@ -31,7 +31,7 @@ public:
     QCameraDevice defaultCamera = QMediaDevices::defaultVideoInput();
     std::string rtm_detnano_onnx_path = "/home/stanisaur/Documents/qtprojects/3DPoseInput/PoseEstimation/models/rtmdet-389d3a.onnx";
     std::string rtm_pose_onnx_path = "/home/stanisaur/Documents/qtprojects/3DPoseInput/PoseEstimation/models/rtmpose-s_simcc-body7_pt-body7_420e.onnx";
-    void processAndDisplayImage(int, const QImage&);
+    void processAndDisplayImages();
 private slots:
     void on_pushButton_clicked();
     void closeCell(int);
