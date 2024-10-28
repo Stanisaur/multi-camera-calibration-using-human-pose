@@ -1,0 +1,9 @@
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/3DPoseInput.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/edit_cache.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/rebuild_cache.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/list_install_components.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install/local.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install/strip.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/3DPoseInput_autogen_timestamp_deps.dir
+/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/3DPoseInput_autogen.dir

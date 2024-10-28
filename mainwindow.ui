@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>911</width>
+    <height>638</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QGridLayout" name="cameraGridLayout"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Add Camera Input</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="imageLabel">
+        <property name="text">
+         <string>horsing around wit a little ass lable you feel me g</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="startPoseTracking">
+        <property name="text">
+         <string>PushButton</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>911</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu3DPoseInput">
+    <property name="title">
+     <string>3DPoseInput</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menusetting_up">
+    <property name="title">
+     <string>setting up...</string>
+    </property>
+   </widget>
+   <addaction name="menu3DPoseInput"/>
+   <addaction name="menusetting_up"/>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

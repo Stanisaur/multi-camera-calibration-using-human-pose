@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-af1f2a039d9fd9ce061a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "3DPoseInput",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "3DPoseInput::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3DPoseInput-Debug-eceea859406bcdc43dc3.json",
+					"name" : "3DPoseInput",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "3DPoseInput_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3DPoseInput_autogen-Debug-e4469d2ca690eb16d346.json",
+					"name" : "3DPoseInput_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "3DPoseInput_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3DPoseInput_autogen_timestamp_deps-Debug-dd2818ad3a1a4945bd9f.json",
+					"name" : "3DPoseInput_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug",
+		"source" : "/home/stanisaur/Documents/qtprojects/3DPoseInput"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
