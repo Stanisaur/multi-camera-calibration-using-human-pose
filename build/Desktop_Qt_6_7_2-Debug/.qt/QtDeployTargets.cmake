@@ -1,2 +1,0 @@
-set(__QT_DEPLOY_TARGET_3DPoseInput_FILE /home/stanisaur/Documents/qtprojects/3DPoseInput/build/Desktop_Qt_6_7_2-Debug/3DPoseInput)
-set(__QT_DEPLOY_TARGET_3DPoseInput_TYPE EXECUTABLE)
