@@ -86,22 +86,29 @@ void MainWindow::processAndDisplayImages(){
             cv::Scalar{ 255, 0, 0 },
             2);
 
-        for (int i = 0; i < pose_result.size(); ++i)
-        {
-            cv::circle(frame, cv::Point(pose_result[i].x, pose_result[i].y), 1, cv::Scalar{ 0, 0, 255 }, 5, cv::LINE_AA);
+        if (!pose_result.empty()){
+            for (int i = 0; i < pose_result.size(); ++i)
+            {
+                cv::circle(frame, cv::Point(pose_result[i].x, pose_result[i].y), 1, cv::Scalar{ 0, 0, 255 }, 5, cv::LINE_AA);
+            }
+
+            for (int i = 0; i < coco_17_joint_links.size(); ++i)
+            {
+                std::pair<int, int> joint_links = coco_17_joint_links[i];
+                cv::line(
+                    frame,
+                    cv::Point(pose_result[joint_links.first].x, pose_result[joint_links.first].y),
+                    cv::Point(pose_result[joint_links.second].x, pose_result[joint_links.second].y),
+                    cv::Scalar{ 0, 255, 0 },
+                    2,
+                    cv::LINE_AA);
+            }
         }
 
-        for (int i = 0; i < coco_17_joint_links.size(); ++i)
-        {
-            std::pair<int, int> joint_links = coco_17_joint_links[i];
-            cv::line(
-                frame,
-                cv::Point(pose_result[joint_links.first].x, pose_result[joint_links.first].y),
-                cv::Point(pose_result[joint_links.second].x, pose_result[joint_links.second].y),
-                cv::Scalar{ 0, 255, 0 },
-                2,
-                cv::LINE_AA);
-        }
+
+
+
+
         cv::Mat resized_frame;
 
         QImage output_frame = mat_to_qimage_ref(frame, QImage::Format_RGB32);
@@ -114,12 +121,14 @@ void MainWindow::on_startPoseTracking_clicked()
 {
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(capturePose()));
-    timer->start(30);
+    timer->start(50);
 }
 
 void MainWindow::capturePose(){
     for (int i = 0;i < numCameraCells; i++){
-        allCellPtr[i]->imageCapture->capture();
+        if (allCellPtr[i]->imageCapture->isReadyForCapture()){
+            allCellPtr[i]->imageCapture->capture();
+        }
     }
 
     processAndDisplayImages();

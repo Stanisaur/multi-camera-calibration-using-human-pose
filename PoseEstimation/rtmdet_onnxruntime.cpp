@@ -46,37 +46,42 @@ DetectBox RTMDetOnnxruntime::Inference(const cv::Mat& input_mat)
 	int image_width = input_mat_copy_rgb.cols;
 	int image_channels = input_mat_copy_rgb.channels();
 
-    float centerX = image_height / 2.0f;
-    float centerY = image_width / 2.0f;
+    float centerX = image_width / 2.0f;
+    float centerY = image_height / 2.0f;
     cv::Mat affineMatrix = GetAffineTransform(centerX, centerY,
                                               static_cast<float>(image_width),
                                               static_cast<float>(image_height),
                                               640, 640);
+
+    cv::Mat affineMatrixInverse = GetAffineTransform(centerX, centerY,
+                                              static_cast<float>(image_width),
+                                              static_cast<float>(image_height),
+                                              640, 640, true);
 
     cv::warpAffine(input_mat_copy_rgb, input_mat_copy_rgb, affineMatrix, cv::Size(640, 640), cv::INTER_LINEAR);
 
     image_width = 640;
     image_height = 640;
 
-	std::vector<float> input_image_array;
-    input_image_array.resize(1 * image_channels * 640 * 640);
+    std::vector<float> input_image_array;
+    input_image_array.resize(1 * image_channels * image_height * image_width);
 
-	float* input_image = input_image_array.data();
-    for (int h = 0; h < 640; ++h)
-	{
-        for (int w = 0; w < 640; ++w)
-		{
-			for (int c = 0; c < image_channels; ++c)
-			{
-                int chw_index = c * 640* 640 + h * 640 + w;
+    float* input_image = input_image_array.data();
 
-				float tmp = input_mat_copy_rgb.ptr<uchar>(h)[w * 3 + c];
+    for (int h = 0; h < image_height; ++h)
+    {
+        for (int w = 0; w < image_width; ++w)
+        {
+            for (int c = 0; c < image_channels; ++c)
+            {
+                int chw_index = c * image_height * image_width + h * image_width + w;
 
-				input_image[chw_index] = (tmp - IMAGE_MEAN[c]) / IMAGE_STD[c];
-			}
-		}
-	}
+                float tmp = input_mat_copy_rgb.ptr<uchar>(h)[w * 3 + c];
 
+                input_image[chw_index] = (tmp - IMAGE_MEAN[c]) / IMAGE_STD[c];
+            }
+        }
+    }
 
 	// inference
 	std::vector<const char*> m_onnx_input_names{ "input" };
@@ -147,6 +152,19 @@ DetectBox RTMDetOnnxruntime::Inference(const cv::Mat& input_mat)
 	{
 		result_box = all_box[0];
 	}
+
+    std::vector<cv::Point2f> box_points = {
+        cv::Point2f(result_box.left, result_box.top),
+        cv::Point2f(result_box.right, result_box.bottom)
+    };
+
+    std::vector<cv::Point2f> original_points;
+    cv::transform(box_points, original_points, affineMatrixInverse);
+
+    result_box.left = static_cast<int>(original_points[0].x);
+    result_box.top = static_cast<int>(original_points[0].y);
+    result_box.right = static_cast<int>(original_points[1].x);
+    result_box.bottom = static_cast<int>(original_points[1].y);
 
 	return result_box;
 }
