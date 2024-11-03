@@ -68,8 +68,20 @@
      <string>setting up...</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menulatency">
+    <property name="title">
+     <string>latency...</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menulatencyValue">
+    <property name="title">
+     <string>latencyValue</string>
+    </property>
+   </widget>
    <addaction name="menu3DPoseInput"/>
    <addaction name="menusetting_up"/>
+   <addaction name="menulatency"/>
+   <addaction name="menulatencyValue"/>
   </widget>
  </widget>
  <resources/>

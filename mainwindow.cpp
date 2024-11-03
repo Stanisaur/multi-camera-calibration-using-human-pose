@@ -6,7 +6,10 @@
 #include <QImageCapture>
 #include <QImage>
 #include <QPixmap>
+#include <QElapsedTimer>
+#include <chrono>
 #include "utils.h"
+#include <QtLogging>
 #include "opencv2/opencv.hpp"
 #include "PoseEstimation/rtmpose_tracker_onnxruntime.h"
 #include "PoseEstimation/rtmpose_utils.h"
@@ -16,12 +19,13 @@ std::vector<std::pair<int, int>> coco_17_joint_links = {
     {0,1},{0,2},{1,3},{2,4},{5,7},{7,9},{6,8},{8,10},{5,6},{5,11},{6,12},{11,12},{11,13},{13,15},{12,14},{14,16}
 };
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    rtmpose_tracker_onnxruntime = std::make_unique<RTMPoseTrackerOnnxruntime>(rtm_detnano_onnx_path, rtm_pose_onnx_path);
+    rtmpose_tracker_onnxruntime = std::make_unique<RTMPoseTrackerOnnxruntime>(rtm_detnano_onnx_path, rtm_pose_onnx_path, 40);
 }
 
 MainWindow::~MainWindow()
@@ -73,8 +77,6 @@ void MainWindow::processAndDisplayImages(){
             continue;
         }
         cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
-
-
         std::pair<DetectBox, std::vector<PosePoint>> inference_box= rtmpose_tracker_onnxruntime->Inference(frame);
         DetectBox detect_box = inference_box.first;
         std::vector<PosePoint> pose_result = inference_box.second;
@@ -110,7 +112,6 @@ void MainWindow::processAndDisplayImages(){
 
 
         cv::Mat resized_frame;
-
         QImage output_frame = mat_to_qimage_ref(frame, QImage::Format_RGB32);
         ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
     }
@@ -119,12 +120,19 @@ void MainWindow::processAndDisplayImages(){
 
 void MainWindow::on_startPoseTracking_clicked()
 {
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(capturePose()));
-    timer->start(50);
+    latencyTimer = new QElapsedTimer();
+    mainTimer = new QTimer(this);
+    latencyUITimer = new QTimer(this);
+    connect(mainTimer, SIGNAL(timeout()), this, SLOT(capturePose()));
+    connect(latencyUITimer, SIGNAL(timeout()), this, SLOT(updateLatency()));
+    mainTimer->start(20);
+    latencyUITimer->start(1000);
+    latencyTimer->start();
 }
 
 void MainWindow::capturePose(){
+    latencyTimer->restart();
+
     for (int i = 0;i < numCameraCells; i++){
         if (allCellPtr[i]->imageCapture->isReadyForCapture()){
             allCellPtr[i]->imageCapture->capture();
@@ -132,5 +140,11 @@ void MainWindow::capturePose(){
     }
 
     processAndDisplayImages();
+    latency = std::chrono::duration_cast<std::chrono::milliseconds>(latencyTimer->durationElapsed()).count();
+}
+
+void MainWindow::updateLatency(){
+    QString string = QString::number(latency);
+    ui->menulatencyValue->setTitle(string);
 }
 

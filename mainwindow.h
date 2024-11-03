@@ -10,6 +10,7 @@
 #include <QCameraDevice>
 #include <QMediaDevices>
 #include <unordered_map>
+#include <QElapsedTimer>
 #include "PoseEstimation/rtmpose_tracker_onnxruntime.h"
 
 QT_BEGIN_NAMESPACE
@@ -37,6 +38,7 @@ private slots:
     void closeCell(int);
     void capturePose();
     void on_startPoseTracking_clicked();
+    void updateLatency();
 
 private:
     Ui::MainWindow *ui;
@@ -46,7 +48,10 @@ private:
     std::unordered_map<int, int> cameraUsage;
     std::unique_ptr<RTMPoseTrackerOnnxruntime> rtmpose_tracker_onnxruntime;
     cv::VideoCapture cap;
-    QTimer *timer;
+    QTimer *mainTimer;
+    QElapsedTimer *latencyTimer;
+    long latency;
+    QTimer *latencyUITimer;
     void addNewCameraCell();
 
 };
