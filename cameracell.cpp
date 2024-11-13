@@ -44,6 +44,14 @@ void CameraCell::setCamera()
 
 }
 
+void CameraCell::swapToPose(){
+    //cant put images in camFeedWidget so we have to stop feeding it video, make it invisible and replace with label
+    currentCameraCaptureSession.setVideoOutput(nullptr);
+    ui->camFeedWidget->hide();
+    poseOutput.reset(new QLabel(this));
+    ui->verticalLayout->addWidget(poseOutput.get());
+}
+
 void CameraCell::updateLatestCapture(int requestID, const QImage& capture){
     this->latestCapture = capture;
 }
@@ -61,3 +69,10 @@ void CameraCell::on_camOptionsComboBox_currentIndexChanged(int index)
     setCamera();
 }
 
+cv::Mat CameraCell::fitImageToCell(cv::Mat frame){
+    double aspectRatio = frame.cols / (double)frame.rows;
+    int targetWidth= ui->camFeedWidget->width();
+    int targetHeight = static_cast<int>(targetWidth / aspectRatio);
+    cv::resize(frame, frame, cv::Size(targetWidth, targetHeight));
+    return frame;
+}

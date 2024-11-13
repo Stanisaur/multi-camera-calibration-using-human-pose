@@ -8,6 +8,8 @@
 #include <QMediaCaptureSession>
 #include <QImageCapture>
 #include <QScopedPointer>
+#include <QLabel>
+#include "opencv2/opencv.hpp"
 #include "utils.h"
 
 namespace Ui {
@@ -35,12 +37,15 @@ public:
     int cameraCellID;
     QScopedPointer<QCamera> camera;
     QScopedPointer<QImageCapture> imageCapture;
+    QScopedPointer<QLabel> poseOutput;
     QMediaCaptureSession currentCameraCaptureSession;
     QImage latestCapture;
 
     void setCameraOptions(QCameraDevice &defaultCamDevice, QVector<QCameraDevice> &list);
     void updateLatestCapture(int requestID, const QImage&);
     void setCamera();
+    void swapToPose();
+    cv::Mat fitImageToCell(cv::Mat);
 signals:
     void closeThisCell(int cellNumber);
 

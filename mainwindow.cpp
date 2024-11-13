@@ -76,7 +76,7 @@ void MainWindow::processAndDisplayImages(){
         if (frame.empty()){
             continue;
         }
-        cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
+        // cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
         std::pair<DetectBox, std::vector<PosePoint>> inference_box= rtmpose_tracker_onnxruntime->Inference(frame);
         DetectBox detect_box = inference_box.first;
         std::vector<PosePoint> pose_result = inference_box.second;
@@ -105,15 +105,12 @@ void MainWindow::processAndDisplayImages(){
                     2,
                     cv::LINE_AA);
             }
-        }
+        }        
 
-
-
-
-
-        cv::Mat resized_frame;
-        QImage output_frame = mat_to_qimage_ref(frame, QImage::Format_RGB32);
-        ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
+        cv::Mat resized_frame = allCellPtr[i]->fitImageToCell(frame);
+        QImage output_frame = mat_to_qimage_ref(resized_frame, QImage::Format_RGB32);
+        allCellPtr[i]->poseOutput->setPixmap(QPixmap::fromImage(output_frame));
+        // ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
     }
 
 }
@@ -123,6 +120,12 @@ void MainWindow::on_startPoseTracking_clicked()
     latencyTimer = new QElapsedTimer();
     mainTimer = new QTimer(this);
     latencyUITimer = new QTimer(this);
+
+    //we are using the cameracells as output for processed images so need to detach them from their respective video capture
+    for (int i= 0; i < numCameraCells;i++){
+        allCellPtr[i]->swapToPose();
+    }
+
     connect(mainTimer, SIGNAL(timeout()), this, SLOT(capturePose()));
     connect(latencyUITimer, SIGNAL(timeout()), this, SLOT(updateLatency()));
     mainTimer->start(20);

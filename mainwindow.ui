@@ -27,17 +27,6 @@
         </property>
        </widget>
       </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QLabel" name="imageLabel">
-        <property name="text">
-         <string>horsing around wit a little ass lable you feel me g</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QPushButton" name="startPoseTracking">
         <property name="text">
