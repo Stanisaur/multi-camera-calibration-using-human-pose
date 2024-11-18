@@ -30,7 +30,7 @@
       <item>
        <widget class="QPushButton" name="startPoseTracking">
         <property name="text">
-         <string>PushButton</string>
+         <string>Start Multi-Camera Calibration</string>
         </property>
        </widget>
       </item>

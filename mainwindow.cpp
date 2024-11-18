@@ -10,6 +10,7 @@
 #include <chrono>
 #include "utils.h"
 #include <QtLogging>
+#include <QThread>
 #include "opencv2/opencv.hpp"
 #include "PoseEstimation/rtmpose_tracker_onnxruntime.h"
 #include "PoseEstimation/rtmpose_utils.h"
@@ -34,6 +35,22 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::addNewCameraCell() {
+    QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
+    QList<QCameraDevice> availableCameras;
+    bool flag = false;
+
+    for (int i = 0; i < cameras.size(); i++){
+        flag = false;
+        for (int j = 0; j < allCellPtr.size(); j++){
+            if (cameras.at(i).id() == allCellPtr[j]->camera->cameraDevice().id()){
+                flag = true;
+                break;
+            }
+        }
+        if (!flag){
+            availableCameras.append(cameras.at(i));
+        }
+    }
     CameraCell *newCameraCell = new CameraCell(this);
     ui->cameraGridLayout->addWidget(newCameraCell,numCameraCells/3,numCameraCells % 3);
     newCameraCell->setAttribute(Qt::WA_DeleteOnClose,true);
@@ -42,10 +59,8 @@ void MainWindow::addNewCameraCell() {
 
     allCellPtr.append(newCameraCell);
     connect(newCameraCell,SIGNAL(closeThisCell(int)),this,SLOT(closeCell(int)));
-    // connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, this,
-    //         &MainWindow::processAndDisplayImage);
-    connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, newCameraCell,
-            &CameraCell::updateLatestCapture);
+    // connect(newCameraCell->imageCapture.get(), &QImageCapture::imageCaptured, newCameraCell,
+    //         &CameraCell::updateLatestCapture);
     numCameraCells++;
 }
 
@@ -67,16 +82,17 @@ void MainWindow::closeCell(int cellNumber){
 }
 
 void MainWindow::processAndDisplayImages(){
+
     cv::Mat frame;
 
     for (int i = 0; i < numCameraCells; i++){
-        QImage &input = allCellPtr[i]->latestCapture;
         //need to use CV_8UC4 to be compatible with Qimage format
-        frame = qimage_to_mat_ref(input, CV_8UC4);
+        // allCellPtr[2]->updateLatestCapture(1, QImage("/home/stanisaur/Pictures/image_0001.jpg"));
+        // frame = cv::Scalar(0,0,0);
+        frame = qimage_to_mat_ref(allCellPtr[i]->getLatestCapture(), CV_8UC4);
         if (frame.empty()){
             continue;
         }
-        // cv::resize(frame, frame, cv::Size(), 0.4, 0.4);
         std::pair<DetectBox, std::vector<PosePoint>> inference_box= rtmpose_tracker_onnxruntime->Inference(frame);
         DetectBox detect_box = inference_box.first;
         std::vector<PosePoint> pose_result = inference_box.second;
@@ -105,14 +121,8 @@ void MainWindow::processAndDisplayImages(){
                     2,
                     cv::LINE_AA);
             }
-        }        
-
-        cv::Mat resized_frame = allCellPtr[i]->fitImageToCell(frame);
-        QImage output_frame = mat_to_qimage_ref(resized_frame, QImage::Format_RGB32);
-        allCellPtr[i]->poseOutput->setPixmap(QPixmap::fromImage(output_frame));
-        // ui->imageLabel->setPixmap(QPixmap::fromImage(output_frame));
+        }
     }
-
 }
 
 void MainWindow::on_startPoseTracking_clicked()
@@ -124,24 +134,20 @@ void MainWindow::on_startPoseTracking_clicked()
     //we are using the cameracells as output for processed images so need to detach them from their respective video capture
     for (int i= 0; i < numCameraCells;i++){
         allCellPtr[i]->swapToPose();
+        QThread::msleep(100);
     }
 
     connect(mainTimer, SIGNAL(timeout()), this, SLOT(capturePose()));
     connect(latencyUITimer, SIGNAL(timeout()), this, SLOT(updateLatency()));
-    mainTimer->start(20);
+
+
+    mainTimer->start(40);
     latencyUITimer->start(1000);
     latencyTimer->start();
 }
 
 void MainWindow::capturePose(){
     latencyTimer->restart();
-
-    for (int i = 0;i < numCameraCells; i++){
-        if (allCellPtr[i]->imageCapture->isReadyForCapture()){
-            allCellPtr[i]->imageCapture->capture();
-        }
-    }
-
     processAndDisplayImages();
     latency = std::chrono::duration_cast<std::chrono::milliseconds>(latencyTimer->durationElapsed()).count();
 }

@@ -8,14 +8,21 @@
 #include <QObject>
 #include <QOverload>
 #include <QImageCapture>
+#include <QMutexLocker>
+#include <QThread>
+#include <QMutex>
+#include <QtMultimedia/qtmultimediaglobal.h>
 #include "mainwindow.h"
 #include "utils.h"
+
+
 
 CameraCell::CameraCell(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::CameraCell)
 {
     ui->setupUi(this);
+    ui->poseOutput->hide();
 }
 
 CameraCell::~CameraCell()
@@ -23,39 +30,56 @@ CameraCell::~CameraCell()
     delete ui;
 }
 
+QMutex CameraCell::imageMutex;
+
 void CameraCell::setCameraOptions(QCameraDevice &defaultCamDevice, QVector<QCameraDevice> &list)
 {
     for (const QCameraDevice &camDevice : list) {
         ui->camOptionsComboBox->addItem(camDevice.description(), QVariant::fromValue(camDevice));
     }
-    //now connect back to main window so that once a new ting is selected, main handler can pass the new cam feed to the algorithm
-    // QObject::connect(ui->camOptionsComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),)
+
 }
 
 void CameraCell::setCamera()
 {
-    camera.reset(new QCamera(ui->camOptionsComboBox->currentData().value<QCameraDevice>()));
-    currentCameraCaptureSession.setCamera(camera.data());
-    currentCameraCaptureSession.setVideoOutput(ui->camFeedWidget);
-    imageCapture.reset(new QImageCapture);
-    currentCameraCaptureSession.setImageCapture(imageCapture.get());
+    camera.reset(new QCamera(this));
+    camera.get()->setCameraDevice(ui->camOptionsComboBox->currentData().value<QCameraDevice>());
+    currentCameraCaptureSession.reset(new QMediaCaptureSession(this));
+    currentCameraCaptureSession->setCamera(camera.data());
+    currentCameraCaptureSession->setVideoOutput(ui->camFeedWidget);
 
     camera->start();
 
 }
 
 void CameraCell::swapToPose(){
-    //cant put images in camFeedWidget so we have to stop feeding it video, make it invisible and replace with label
-    currentCameraCaptureSession.setVideoOutput(nullptr);
-    ui->camFeedWidget->hide();
-    poseOutput.reset(new QLabel(this));
-    ui->verticalLayout->addWidget(poseOutput.get());
+    QMutexLocker locker(&imageMutex);
+
+    if (!videoSink.isNull()){
+        disconnect(videoSink.get(), &QVideoSink::videoFrameChanged, this,
+                &CameraCell::updateLatestCapture);
+    }
+
+    videoSink.reset(new QVideoSink(this));
+    //connect our processing function to videosink
+    connect(ui->camFeedWidget->videoSink(), &QVideoSink::videoFrameChanged, videoSink.get(),
+            &QVideoSink::setVideoFrame);
+    connect(videoSink.get(), &QVideoSink::videoFrameChanged, this,
+            &CameraCell::updateLatestCapture);
 }
 
-void CameraCell::updateLatestCapture(int requestID, const QImage& capture){
-    this->latestCapture = capture;
-}
+void CameraCell::updateLatestCapture(){
+    QMutexLocker locker(&imageMutex);
 
+
+    const QVideoFrame placeholder = ui->camFeedWidget->videoSink()->videoFrame();
+    if (!placeholder.isValid()){
+        return;
+    }
+
+    this->latestCapture = placeholder.toImage();
+
+}
 
 void CameraCell::on_removeButton_clicked()
 {
@@ -73,6 +97,19 @@ cv::Mat CameraCell::fitImageToCell(cv::Mat frame){
     double aspectRatio = frame.cols / (double)frame.rows;
     int targetWidth= ui->camFeedWidget->width();
     int targetHeight = static_cast<int>(targetWidth / aspectRatio);
-    cv::resize(frame, frame, cv::Size(targetWidth, targetHeight));
+    if (!frame.empty()){
+        cv::resize(frame, frame, cv::Size(targetWidth, targetHeight));
+    }
     return frame;
+}
+
+QImage CameraCell::getLatestCapture(){
+    QMutexLocker locker(&imageMutex);
+    return this->latestCapture;
+}
+
+void CameraCell::displayOutput(cv::Mat frame){
+    cv::Mat resized_frame = fitImageToCell(frame);
+    QImage output_frame = mat_to_qimage_ref(resized_frame, QImage::Format_RGB32);
+    ui->poseOutput->setPixmap(QPixmap::fromImage(output_frame));
 }

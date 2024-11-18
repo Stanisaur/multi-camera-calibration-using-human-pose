@@ -28,7 +28,6 @@ public:
     ~MainWindow();
     int numCameraCells = 0;
     QVector<CameraCell *> allCellPtr;
-    QList<QCameraDevice> availableCameras = QMediaDevices::videoInputs();
     QCameraDevice defaultCamera = QMediaDevices::defaultVideoInput();
     std::string rtm_detnano_onnx_path = "../../PoseEstimation/models/rtmdet-389d3a.onnx";
     std::string rtm_pose_onnx_path = "../../PoseEstimation/models/rtmpose-s_simcc-body7_pt-body7_420e.onnx";

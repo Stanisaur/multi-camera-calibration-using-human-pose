@@ -23,6 +23,13 @@
       <widget class="QVideoWidget" name="camFeedWidget" native="true"/>
      </item>
      <item>
+      <widget class="QLabel" name="poseOutput">
+       <property name="text">
+        <string>output for pose result</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="removeButton">
        <property name="text">
         <string>remove cam</string>

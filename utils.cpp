@@ -38,14 +38,19 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 
 QImage mat_to_qimage_ref(cv::Mat &mat, QImage::Format format)
 {
-    return QImage(mat.data, mat.cols, mat.rows,
-                  static_cast<int>(mat.step), format);
+    cv::Mat placeholder = mat;
+    // mat.copyTo(placeholder);
+    return QImage(placeholder.data, placeholder.cols, placeholder.rows,
+                  static_cast<int>(placeholder.step), format);
 }
 
 cv::Mat qimage_to_mat_ref(const QImage &img, int format)
 {
-    return cv::Mat(img.height(), img.width(),
-                   format, (uchar*)img.bits(), img.bytesPerLine());
+    cv::Mat placeholder(img.height(), img.width(),
+                        format, (uchar*)img.constBits(), img.bytesPerLine());
+    cv::Mat final;
+    // placeholder.copyTo(final);
+    return placeholder;
 }
 
 

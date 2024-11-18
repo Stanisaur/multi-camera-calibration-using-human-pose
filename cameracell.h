@@ -9,23 +9,16 @@
 #include <QImageCapture>
 #include <QScopedPointer>
 #include <QLabel>
+#include <QVideoSink>
+#include <QVideoFrame>
+#include <QMutex>
+#include <QQueue>
 #include "opencv2/opencv.hpp"
 #include "utils.h"
 
 namespace Ui {
 class CameraCell;
 }
-
-// struct CamOption
-// {
-//     CamOption(const QString &text, QCameraDevice &cameraDevice)
-//         : name(cameraDevice.description())
-//         , cameraDevice(cameraDevice)
-//     {
-//     }
-//     QString name;
-//     QCameraDevice cameraDevice;
-// };
 
 class CameraCell : public QWidget
 {
@@ -37,12 +30,14 @@ public:
     int cameraCellID;
     QScopedPointer<QCamera> camera;
     QScopedPointer<QImageCapture> imageCapture;
-    QScopedPointer<QLabel> poseOutput;
-    QMediaCaptureSession currentCameraCaptureSession;
-    QImage latestCapture;
+    QScopedPointer<QMediaCaptureSession> currentCameraCaptureSession;
+    static QMutex imageMutex;
 
     void setCameraOptions(QCameraDevice &defaultCamDevice, QVector<QCameraDevice> &list);
-    void updateLatestCapture(int requestID, const QImage&);
+    void updateLatestCapture();
+    void chungus(int requestID, const QImage&);
+    QImage getLatestCapture();
+    void displayOutput(cv::Mat);
     void setCamera();
     void swapToPose();
     cv::Mat fitImageToCell(cv::Mat);
@@ -56,7 +51,14 @@ private slots:
 
 
 private:
+    cv::Mat lastProcessedFrame;
+    QImage latestCapture;
+    QScopedPointer<QVideoSink> videoSink;
     Ui::CameraCell *ui;
+    QQueue<QPair<QImage, qint64>> frameQueue;
+    static const int MAX_QUEUE_SIZE = 2;  // Adjust as needed
+    QTimer* processTimer;
+
 };
 
 #endif // CAMERACELL_H
