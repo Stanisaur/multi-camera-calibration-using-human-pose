@@ -24,7 +24,7 @@ RTMDetOnnxruntime::RTMDetOnnxruntime(const std::string& onnx_model_path)
 	OrtSessionOptionsAppendExecutionProvider_CPU(session_options, 0);
     m_session = Ort::Session(m_env, onnx_model_path.c_str(), session_options);
 
-	PrintModelInfo(m_session);
+    // PrintModelInfo(m_session);
 }
 
 RTMDetOnnxruntime::~RTMDetOnnxruntime()

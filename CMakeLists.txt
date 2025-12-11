@@ -16,10 +16,6 @@ find_package(Qt6 REQUIRED COMPONENTS MultimediaWidgets)
 
 find_package( OpenCV REQUIRED )
 find_package( onnxruntime REQUIRED)
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-include_directories(/usr/local/onnxruntime-linux-x64-1.19.2/include)
-
-
 
 set(PROJECT_SOURCES
         main.cpp
@@ -56,7 +52,7 @@ else()
     else()
         add_executable(MultiCameraCalibration
             ${PROJECT_SOURCES}
-            images.qrc
+            # images.qrc
         )
     endif()
 endif()

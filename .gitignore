@@ -33,3 +33,6 @@
 
 # Directories
 build/
+
+# CMakeLocalConfig etc
+CMakeLists.txt.user.*

@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QVector>
 #include <QList>
+#include <QtConcurrent/QtConcurrent>
+#include <QFuture>
 #include <QCameraDevice>
 #include <QMediaDevices>
 #include <unordered_map>
@@ -29,8 +31,6 @@ public:
     int numCameraCells = 0;
     QVector<CameraCell *> allCellPtr;
     QCameraDevice defaultCamera = QMediaDevices::defaultVideoInput();
-    std::string rtm_detnano_onnx_path = "../../PoseEstimation/models/rtmdet-389d3a.onnx";
-    std::string rtm_pose_onnx_path = "../../PoseEstimation/models/rtmpose-s_simcc-body7_pt-body7_420e.onnx";
     void processAndDisplayImages();
 private slots:
     void on_pushButton_clicked();
@@ -41,7 +41,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    std::unique_ptr<RTMPoseTrackerOnnxruntime> rtmpose_tracker_onnxruntime;
     cv::VideoCapture cap;
     QTimer *mainTimer;
     QElapsedTimer *latencyTimer;

@@ -11,14 +11,22 @@
 #include <QLabel>
 #include <QVideoSink>
 #include <QVideoFrame>
-#include <QMutex>
 #include <QQueue>
 #include "opencv2/opencv.hpp"
 #include "utils.h"
+#include "PoseEstimation/rtmpose_tracker_onnxruntime.h"
+#include "PoseEstimation/rtmpose_utils.h"
 
 namespace Ui {
 class CameraCell;
 }
+
+struct CameraPoseResult {
+    int cellID;                 // To know which camera this result belongs to
+    cv::Mat originalFrame;      // The frame (cloned)
+    DetectBox box;              // The bounding box found
+    std::vector<PosePoint> keypoints; // The skeleton points
+};
 
 class CameraCell : public QWidget
 {
@@ -29,34 +37,34 @@ public:
     ~CameraCell();
     int cameraCellID;
     QScopedPointer<QCamera> camera;
-    QScopedPointer<QImageCapture> imageCapture;
     QScopedPointer<QMediaCaptureSession> currentCameraCaptureSession;
-    static QMutex imageMutex;
+    std::unique_ptr<RTMPoseTrackerOnnxruntime> rtmpose_tracker_onnxruntime;
+    std::string rtm_detnano_onnx_path = "../../PoseEstimation/models/rtmdet-389d3a.onnx";
+    std::string rtm_pose_onnx_path = "../../PoseEstimation/models/rtmpose-s_simcc-body7_pt-body7_420e.onnx";
 
     void setCameraOptions(QCameraDevice &defaultCamDevice, QVector<QCameraDevice> &list);
     void updateLatestCapture();
     void chungus(int requestID, const QImage&);
     QImage getLatestCapture();
-    void displayOutput(cv::Mat);
     void setCamera();
     void swapToPose();
     cv::Mat fitImageToCell(cv::Mat);
+    CameraPoseResult extractPose();
 signals:
     void closeThisCell(int cellNumber);
 
+public slots:
+    void displayOutput(cv::Mat);
 
 private slots:
     void on_removeButton_clicked();
     void on_camOptionsComboBox_currentIndexChanged(int index);
 
-
 private:
     cv::Mat lastProcessedFrame;
-    QImage latestCapture;
-    QScopedPointer<QVideoSink> videoSink;
+    cv::Mat latestCapture;
+    QScopedPointer<QVideoSink> m_captureSink;
     Ui::CameraCell *ui;
-    QQueue<QPair<QImage, qint64>> frameQueue;
-    static const int MAX_QUEUE_SIZE = 2;  // Adjust as needed
     QTimer* processTimer;
 
 };
