@@ -112,4 +112,9 @@ static cv::Mat GetAffineTransform(float center_x, float center_y, float scale_wi
 	return affineTransform;
 }
 
+static Ort::Env& getSharedEnv() {
+    static Ort::Env env(ORT_LOGGING_LEVEL_ERROR, "shared_onnx_env");
+    return env;
+}
+
 #endif // !_RTM_POSE_UTILS_H_

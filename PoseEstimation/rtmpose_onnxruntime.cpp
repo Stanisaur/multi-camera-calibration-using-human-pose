@@ -16,7 +16,7 @@ RTMPoseOnnxruntime::RTMPoseOnnxruntime(const std::string& onnx_model_path)
 {
     // std::wstring onnx_model_path_wstr = stubbornhuang::CharactersetConvert::string_to_wstring(onnx_model_path);
 
-	m_env = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "rtmpose_onnxruntime_cpu");
+    Ort::Env& env = getSharedEnv();
 
 	int cpu_processor_num = std::thread::hardware_concurrency();
 	cpu_processor_num /= 2;
@@ -27,7 +27,7 @@ RTMPoseOnnxruntime::RTMPoseOnnxruntime(const std::string& onnx_model_path)
 	session_options.SetLogSeverityLevel(4);
 
 	OrtSessionOptionsAppendExecutionProvider_CPU(session_options, 0);
-    m_session = Ort::Session(m_env, onnx_model_path.c_str(), session_options);
+    m_session = Ort::Session(env, onnx_model_path.c_str(), session_options);
 
 	PrintModelInfo(m_session);
 }

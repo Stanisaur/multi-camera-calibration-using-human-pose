@@ -24,7 +24,6 @@ private:
 	void PrintModelInfo(Ort::Session& session);
 
 private:
-	Ort::Env m_env;
 	Ort::Session m_session;
 
 };
